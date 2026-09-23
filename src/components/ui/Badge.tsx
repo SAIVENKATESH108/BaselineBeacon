@@ -2,19 +2,23 @@
 import { cn } from '@/lib/utils'
 import type { HTMLAttributes } from 'react'
 
-type BadgeVariant = 'routine' | 'noteworthy' | 'incident' | 'navy' | 'teal' | 'neutral'
+type BadgeVariant = 'routine' | 'noteworthy' | 'incident' | 'navy' | 'teal' | 'indigo' | 'amber' | 'emerald' | 'neutral'
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant
+  dot?: boolean
 }
 
 const variants: Record<BadgeVariant, string> = {
-  routine:    'bg-cream-100 text-navy-700 border border-cream-300',
-  noteworthy: 'bg-amber-100 text-amber-800 border border-amber-200',
-  incident:   'bg-red-100 text-red-800 border border-red-200',
-  navy:       'bg-navy-800 text-white',
-  teal:       'bg-teal-100 text-teal-800 border border-teal-200',
-  neutral:    'bg-gray-100 text-gray-700 border border-gray-200',
+  routine:    'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium shadow-sm shadow-emerald-500/10',
+  noteworthy: 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-[0_0_12px_rgba(245,158,11,0.25)] font-semibold',
+  incident:   'bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-[0_0_12px_rgba(244,63,94,0.25)] font-bold',
+  navy:       'bg-navy-900/90 text-teal-300 border border-teal-500/30 shadow-sm',
+  teal:       'bg-teal-500/15 text-teal-300 border border-teal-500/30 font-medium shadow-sm shadow-teal-500/10',
+  indigo:     'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-medium shadow-sm shadow-indigo-500/10',
+  amber:      'bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium shadow-sm shadow-amber-500/10',
+  emerald:    'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium shadow-sm shadow-emerald-500/10',
+  neutral:    'bg-slate-800/80 text-slate-300 border border-slate-700/80 font-medium',
 }
 
 export function Badge({ variant = 'neutral', className, children, ...props }: BadgeProps) {

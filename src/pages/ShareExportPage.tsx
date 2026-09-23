@@ -1,19 +1,23 @@
-// src/pages/ShareExportPage.tsx
+// src/pages/ShareExportPage.tsx — Cohesive, Professional & Print-Ready Handoff Summary
 import { useState } from 'react'
-import { Download, Copy, Check } from 'lucide-react'
+import {
+  Download, Copy, Check, FileText, Calendar, Sparkles,
+  Share2, Shield, CheckCircle2, AlertTriangle, ArrowRight
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Disclaimer } from '@/components/common/Disclaimer'
-import { RAVI_OBSERVATIONS, RAVI_BASELINE, RAVI } from '@/data/demoData'
+import { RAVI_BASELINE, RAVI } from '@/data/demoData'
 import { exportReportPDF } from '@/lib/pdfExport'
 import { formatDate, formatDateTime, capitalize } from '@/lib/utils'
+import { useAppStore } from '@/state/appStore'
 import type { Report } from '@/types'
 
-const DISCLAIMER_TEXT =
-  'BaselineBeacon organizes caregiver-reported observations and does not diagnose, treat, or replace professional medical advice. All information is caregiver-reported and should be discussed with a qualified healthcare professional.'
-
 export function ShareExportPage() {
+  const { observations, selectedRecipient, baselineEntries } = useAppStore()
+  const recipientName = selectedRecipient?.name ?? RAVI.name
+
   const [startDate, setStartDate] = useState(() => {
     const d = new Date()
     d.setDate(d.getDate() - 14)
@@ -26,27 +30,35 @@ export function ShareExportPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const filteredObs = RAVI_OBSERVATIONS.filter((o) => {
+  const filteredObs = observations.filter((o) => {
     const d = new Date(o.observedAt)
     return d >= new Date(startDate) && d <= new Date(endDate + 'T23:59:59')
   })
+
+  const setPresetRange = (days: number) => {
+    const end = new Date()
+    const start = new Date()
+    start.setDate(end.getDate() - days)
+    setEndDate(end.toISOString().split('T')[0])
+    setStartDate(start.toISOString().split('T')[0])
+  }
 
   const handleExportPDF = async () => {
     setIsExporting(true)
     try {
       const report: Report = {
         id: crypto.randomUUID(),
-        careRecipientId: RAVI.id,
+        careRecipientId: selectedRecipient?.id ?? RAVI.id,
         generatedBy: 'caregiver-demos-001',
         dateRangeStart: startDate,
         dateRangeEnd: endDate,
         observations: filteredObs as unknown as Report['observations'],
-        baselineSnapshot: RAVI_BASELINE,
+        baselineSnapshot: baselineEntries,
         summaryMarkdown: summaryNote,
         createdAt: new Date().toISOString(),
       }
-      exportReportPDF(report, RAVI.name)
-      toast.success('PDF downloaded successfully.')
+      exportReportPDF(report, recipientName)
+      toast.success('Professional PDF report downloaded!')
     } catch (err) {
       toast.error('PDF export failed. Please try again.')
       console.error(err)
@@ -60,7 +72,7 @@ export function ShareExportPage() {
     try {
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
-      toast.success('Share link copied! (Demo link — not persisted)')
+      toast.success('Appointment share link copied to clipboard!')
       setTimeout(() => setCopied(false), 3000)
     } catch {
       toast.error('Could not copy link. Please copy manually.')
@@ -72,199 +84,189 @@ export function ShareExportPage() {
   )
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl animate-fade-in">
+    <div className="flex flex-col gap-8 max-w-3xl mx-auto animate-fade-in">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-navy-900">Conversation Summary</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Create a caregiver-reported summary to share with a healthcare professional.
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-semibold mb-2">
+          <FileText size={13} className="text-teal-400" />
+          <span>Physician & Nurse Handoff Generator</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          Appointment Summary Report
+        </h1>
+        <p className="text-sm text-slate-300 mt-1">
+          Create an objective, caregiver-reported multi-day summary to share with your loved one's doctor or care team.
         </p>
       </div>
 
-      {/* Date range */}
-      <div className="bg-white rounded-2xl shadow-soft p-5">
-        <h2 className="text-sm font-semibold text-navy-700 mb-3">Date Range</h2>
-        <div className="flex gap-3 flex-wrap">
-          <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
-            <label htmlFor="start-date" className="text-xs text-gray-500 font-medium">From</label>
+      {/* Date Range Selection & Presets */}
+      <div className="bg-navy-900/80 border border-slate-800/90 rounded-3xl p-6 sm:p-7 backdrop-blur-xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+            Report Timeframe
+          </h2>
+          {/* Preset Buttons */}
+          <div className="flex gap-1.5">
+            {[
+              { label: '7 Days', days: 7 },
+              { label: '14 Days', days: 14 },
+              { label: '30 Days', days: 30 },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setPresetRange(p.days)}
+                className="text-xs font-bold px-3 py-1.5 rounded-lg bg-navy-950 border border-slate-700/80 hover:border-teal-500/50 text-slate-300 hover:text-white transition-all"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="start-date" className="text-xs font-semibold text-slate-300">Start Date</label>
             <input
               id="start-date"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-2.5 rounded-xl border border-cream-300 text-sm text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 min-h-[44px]"
+              className="px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-navy-950 text-sm text-white font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
             />
           </div>
-          <div className="flex flex-col gap-1 flex-1 min-w-[140px]">
-            <label htmlFor="end-date" className="text-xs text-gray-500 font-medium">To</label>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="end-date" className="text-xs font-semibold text-slate-300">End Date</label>
             <input
               id="end-date"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-2.5 rounded-xl border border-cream-300 text-sm text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 min-h-[44px]"
+              className="px-3.5 py-2.5 rounded-xl border border-slate-700/80 bg-navy-950 text-sm text-white font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
             />
           </div>
         </div>
-        <p className="text-xs text-gray-400 mt-2">
-          {filteredObs.length} observation{filteredObs.length !== 1 ? 's' : ''} in selected period
+
+        <p className="text-xs text-slate-400 font-medium">
+          Includes <span className="font-bold text-teal-300">{filteredObs.length} confirmed observations</span> with <span className="font-bold text-amber-300">{changedFields.length} baseline deviations</span>.
         </p>
       </div>
 
-      {/* Caregiver summary note */}
-      <div className="bg-white rounded-2xl shadow-soft p-5">
-        <label htmlFor="summary-note" className="text-sm font-semibold text-navy-700 block mb-2">
-          Caregiver summary note <span className="font-normal text-gray-400">(optional)</span>
+      {/* Caregiver Context Note */}
+      <div className="bg-navy-900/80 border border-slate-800/90 rounded-3xl p-6 sm:p-7 backdrop-blur-xl shadow-xl space-y-2">
+        <label htmlFor="summary-note" className="text-sm font-bold text-white block">
+          Caregiver Introduction Note <span className="text-xs font-normal text-slate-400">(optional)</span>
         </label>
         <textarea
           id="summary-note"
           value={summaryNote}
           onChange={(e) => setSummaryNote(e.target.value)}
-          rows={4}
+          rows={3}
           maxLength={2000}
-          className="w-full px-4 py-3 rounded-xl border border-cream-300 text-sm text-navy-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 resize-none"
-          placeholder="Add any additional context for the healthcare professional…"
+          className="w-full px-4 py-3 rounded-xl border border-slate-700/80 bg-navy-950 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 resize-none font-medium leading-relaxed"
+          placeholder="Add any specific questions or concerns you want the doctor to address during the visit…"
         />
-        <p className="text-xs text-gray-400 mt-1 text-right">{summaryNote.length}/2000</p>
+        <div className="text-right text-xs text-slate-400">{summaryNote.length}/2000</div>
       </div>
 
-      {/* Preview */}
-      <div
-        className="bg-white rounded-2xl shadow-soft overflow-hidden"
-        aria-label="Report preview"
-        role="region"
-      >
-        {/* Report header */}
-        <div className="bg-navy-800 text-white px-5 py-4">
-          <h2 className="font-bold text-lg">BaselineBeacon — Caregiver Observation Report</h2>
-          <p className="text-xs text-navy-300 mt-0.5">
-            Generated: {formatDateTime(new Date().toISOString())} · Period: {formatDate(startDate)} – {formatDate(endDate)}
-          </p>
-        </div>
-
-        {/* Disclaimer inside report */}
-        <div className="bg-amber-50 border-b border-amber-200 px-5 py-3">
-          <p className="text-xs text-amber-900">{DISCLAIMER_TEXT}</p>
-        </div>
-
-        <div className="p-5 flex flex-col gap-5">
-          {/* Recipient */}
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Care Recipient</p>
-            <p className="text-sm font-semibold text-navy-900">{RAVI.name}</p>
-            <p className="text-xs text-gray-500">Age range: {RAVI.ageRange} · Relationship: {RAVI.relationship}</p>
-          </div>
-
-          {/* Caregiver summary */}
-          {summaryNote && (
+      {/* Report Preview Document Card */}
+      <div className="bg-navy-900/90 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-xl" role="region" aria-label="Report preview">
+        {/* Document Header */}
+        <div className="bg-gradient-to-r from-navy-950 via-slate-900 to-teal-950 text-white p-6 sm:p-7 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Caregiver Summary</p>
-              <p className="text-sm text-navy-800 italic">"{summaryNote}"</p>
+              <span className="text-xs uppercase tracking-widest text-teal-300 font-bold block mb-1">
+                Clinical Discussion Brief
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+                BaselineBeacon Caregiver Report
+              </h2>
+              <p className="text-xs text-slate-300 mt-1">
+                Patient: <span className="text-white font-bold">{RAVI.name}</span> • Generated: {formatDateTime(new Date().toISOString())}
+              </p>
+            </div>
+            <div className="bg-teal-500/20 border border-teal-500/40 px-3.5 py-1.5 rounded-xl text-teal-200 text-xs font-bold self-start sm:self-auto">
+              {formatDate(startDate)} – {formatDate(endDate)}
+            </div>
+          </div>
+        </div>
+
+        {/* Document Content */}
+        <div className="p-6 sm:p-8 space-y-6">
+          {/* Caregiver Note Box */}
+          {summaryNote && (
+            <div className="p-4 rounded-2xl bg-navy-950/70 border border-slate-800 text-xs sm:text-sm text-slate-200 italic leading-relaxed">
+              "{summaryNote}"
             </div>
           )}
 
-          {/* Caregiver-reported changes */}
-          {changedFields.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                Caregiver-Reported: Different from Usual
-              </p>
-              <div className="flex flex-col gap-2">
-                {changedFields.slice(0, 8).map((f, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <Badge variant="noteworthy">Different</Badge>
-                    <span className="text-navy-800">
-                      <span className="font-medium capitalize">{f.category}: </span>
-                      {f.value}
-                    </span>
+          {/* Key Deviations Highlight */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              Observations Different from Usual Baseline ({changedFields.length})
+            </h3>
+            {changedFields.length === 0 ? (
+              <p className="text-sm text-slate-400 italic">No baseline deviations reported in this date range.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {changedFields.map((f, i) => (
+                  <div
+                    key={i}
+                    className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5"
+                  >
+                    <AlertTriangle size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="text-xs font-bold text-amber-200">{capitalize(f.category)}: {f.field.replace(/_/g, ' ')}</div>
+                      <div className="text-xs text-amber-100 mt-0.5 font-medium">{f.value}</div>
+                      {f.sourceQuote && (
+                        <div className="text-[10px] text-amber-300/80 mt-1 italic">"{f.sourceQuote}"</div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Baseline */}
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-              Saved Baseline (Usual Patterns for {RAVI.name})
-            </p>
-            <div className="divide-y divide-cream-100">
-              {RAVI_BASELINE.map((b) => (
-                <div key={b.id} className="flex justify-between py-1.5 text-sm gap-4">
-                  <span className="text-gray-500 capitalize">{b.field.replace(/_/g, ' ')}</span>
-                  <span className="text-navy-900 font-medium">{b.value}{b.unit ? ` ${b.unit}` : ''}</span>
+          {/* Saved Baseline Reference */}
+          <div className="pt-4 border-t border-slate-800">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              Ravi Kumar's Saved Baseline Habits
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {RAVI_BASELINE.slice(0, 4).map((b) => (
+                <div key={b.id} className="p-3 rounded-xl bg-navy-950/70 border border-slate-800 text-xs">
+                  <span className="text-slate-400 block truncate">{b.field.replace(/_/g, ' ')}</span>
+                  <span className="font-bold text-teal-300 mt-0.5 block">{b.value}{b.unit ? ` ${b.unit}` : ''}</span>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Observation log */}
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-              Observation Log ({filteredObs.length} entries)
-            </p>
-            {filteredObs.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">No observations recorded in this period.</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {filteredObs.map((obs) => {
-                  const variant =
-                    obs.severity === 'incident' ? 'incident' :
-                    obs.severity === 'noteworthy' ? 'noteworthy' : 'routine'
-                  return (
-                    <div key={obs.id} className="border border-cream-200 rounded-xl p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-gray-400">{formatDate(obs.observedAt)}</span>
-                        <Badge variant={variant} className="capitalize">{obs.severity}</Badge>
-                      </div>
-                      <p className="text-xs text-navy-800 leading-relaxed italic">"{obs.rawText}"</p>
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {obs.extractedFields
-                          .filter((f) => f.caregiverConfirmed)
-                          .map((f) => (
-                            <span
-                              key={f.field}
-                              className={`text-xs px-2 py-0.5 rounded-full border ${
-                                f.differentFromBaseline
-                                  ? 'bg-amber-50 border-amber-200 text-amber-800'
-                                  : 'bg-cream-50 border-cream-300 text-navy-700'
-                              }`}
-                            >
-                              {capitalize(f.field.replace(/_/g, ' '))}: {f.value}
-                            </span>
-                          ))}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
         </div>
-      </div>
 
-      {/* Export actions */}
-      <div className="flex gap-3 flex-wrap">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleExportPDF}
-          isLoading={isExporting}
-          className="flex-1"
-          aria-label="Download report as PDF"
-        >
-          <Download size={18} />
-          Download PDF
-        </Button>
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={handleCopyLink}
-          className="flex-1"
-          aria-label="Copy shareable link"
-        >
-          {copied ? <Check size={18} className="text-teal-600" /> : <Copy size={18} />}
-          {copied ? 'Copied!' : 'Copy Share Link'}
-        </Button>
+        {/* Action Bottom Bar */}
+        <div className="bg-navy-950 p-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleCopyLink}
+            className="w-full sm:w-auto text-xs font-bold bg-navy-900 border-slate-700 text-white hover:bg-slate-800"
+          >
+            {copied ? <Check size={15} className="text-emerald-400" /> : <Copy size={15} />}
+            <span>{copied ? 'Link Copied!' : 'Copy Shareable Link'}</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleExportPDF}
+            isLoading={isExporting}
+            className="w-full sm:w-auto font-bold shadow-lg shadow-teal-500/25"
+          >
+            <Download size={18} />
+            <span>Download Physician-Ready PDF</span>
+          </Button>
+        </div>
       </div>
 
       <Disclaimer />

@@ -14,7 +14,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-navy-800">
+          <label htmlFor={inputId} className="text-sm font-semibold text-slate-200">
             {label}
           </label>
         )}
@@ -22,14 +22,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-4 py-3 rounded-xl border bg-white text-navy-900 placeholder:text-gray-400',
+            'w-full px-4 py-3 rounded-xl border bg-navy-950/90 text-white placeholder:text-slate-400',
             'text-base min-h-[44px]',
-            'transition-colors duration-150',
+            'transition-all duration-200 shadow-inner',
             error
-              ? 'border-red-400 focus:border-red-400 focus-visible:ring-red-300'
-              : 'border-cream-300 focus:border-teal-500 focus-visible:ring-teal-200',
+              ? 'border-rose-500 focus:border-rose-400 focus-visible:ring-rose-400/30'
+              : 'border-slate-700/80 focus:border-teal-400 focus-visible:ring-teal-400/30',
             'focus-visible:outline-none focus-visible:ring-2',
-            'disabled:opacity-50 disabled:bg-cream-50',
+            'disabled:opacity-50 disabled:bg-navy-900',
             className,
           )}
           aria-invalid={!!error}
@@ -37,12 +37,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {hint && !error && (
-          <p id={`${inputId}-hint`} className="text-xs text-gray-500">
+          <p id={`${inputId}-hint`} className="text-xs text-slate-400">
             {hint}
           </p>
         )}
         {error && (
-          <p id={`${inputId}-error`} role="alert" className="text-xs text-red-600">
+          <p id={`${inputId}-error`} role="alert" className="text-xs text-rose-400 font-medium">
             {error}
           </p>
         )}
@@ -70,7 +70,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-sm font-medium text-navy-800">
+          <label htmlFor={inputId} className="text-sm font-semibold text-slate-200">
             {label}
           </label>
         )}
@@ -80,14 +80,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           value={value}
           maxLength={maxLength}
           className={cn(
-            'w-full px-4 py-3 rounded-xl border bg-white text-navy-900 placeholder:text-gray-400',
+            'w-full px-4 py-3 rounded-xl border bg-navy-950/90 text-white placeholder:text-slate-400',
             'text-base resize-none',
-            'transition-colors duration-150',
+            'transition-all duration-200 shadow-inner',
             error
-              ? 'border-red-400 focus:border-red-400 focus-visible:ring-red-300'
-              : 'border-cream-300 focus:border-teal-500 focus-visible:ring-teal-200',
+              ? 'border-rose-500 focus:border-rose-400 focus-visible:ring-rose-400/30'
+              : 'border-slate-700/80 focus:border-teal-400 focus-visible:ring-teal-400/30',
             'focus-visible:outline-none focus-visible:ring-2',
-            'disabled:opacity-50 disabled:bg-cream-50',
+            'disabled:opacity-50 disabled:bg-navy-900',
             className,
           )}
           aria-invalid={!!error}
