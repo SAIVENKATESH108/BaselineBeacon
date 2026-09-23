@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   },
@@ -17,10 +19,16 @@
     "@hookform/resolvers": "^5.9.1",
     "@supabase/supabase-js": "^2.117.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/query-sync-storage-persister": "^5.103.2",
+    "@tanstack/react-query": "^5.103.2",
+    "@tanstack/react-query-persist-client": "^5.103.2",
+    "@vitejs/plugin-react": "^6.1.1",
     "clsx": "^2.1.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.47.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "react-hook-form": "^7.88.0",
     "react-router-dom": "^7.18.4",
     "recharts": "^3.10.1",

@@ -464,18 +464,19 @@ function verifyBaselineConsistency(
     baseline.map(b => [b.field, b.value]),
   )
 
-  for (const [field, val] of obsFields) {
-    const baseVal = baseFields.get(field)
+  for (const [fieldKey, val] of obsFields) {
+    const baseVal = baseFields.get(fieldKey)
     if (baseVal !== undefined) {
       const differs = val !== baseVal
-      if (differs && field.differentFromBaseline !== true) {
+      const fieldObj = observation.extractedFields.find((f) => f.field === fieldKey)
+      if (differs && fieldObj?.differentFromBaseline !== true) {
         errors.push(
-          `observation ${observation.id}: field ${field} differs from baseline but differentFromBaseline is not true`,
+          `observation ${observation.id}: field ${fieldKey} differs from baseline but differentFromBaseline is not true`,
         )
       }
-      if (!differs && field.differentFromBaseline !== false && field.differentFromBaseline !== null) {
+      if (!differs && fieldObj?.differentFromBaseline !== false && fieldObj?.differentFromBaseline !== null) {
         errors.push(
-          `observation ${observation.id}: field ${field} matches baseline but differentFromBaseline is not false/null`,
+          `observation ${observation.id}: field ${fieldKey} matches baseline but differentFromBaseline is not false/null`,
         )
       }
     }

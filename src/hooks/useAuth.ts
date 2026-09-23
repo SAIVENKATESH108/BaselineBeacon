@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { useDemoStore } from '@/store/demoStore'
+import { useAppStore } from '@/state/appStore'
+import { AppMode } from '@/domain/models'
 
 export interface AuthState {
   user: User | null
@@ -20,7 +21,8 @@ export function useAuth(): AuthState & {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const { isDemo, enableDemo, disableDemo } = useDemoStore()
+  const { mode, enableDemoMode, disableDemoMode } = useAppStore()
+  const isDemo = mode === AppMode.Demo
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -49,9 +51,9 @@ export function useAuth(): AuthState & {
   }
 
   const signOut = async () => {
-    disableDemo()
+    disableDemoMode()
     await supabase.auth.signOut()
   }
 
-  return { user, session, loading, isDemo, signIn, signUp, signOut, enableDemo }
+  return { user, session, loading, isDemo, signIn, signUp, signOut, enableDemo: enableDemoMode }
 }
